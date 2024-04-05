@@ -1,0 +1,1 @@
+# maxtitanium.product-resource
