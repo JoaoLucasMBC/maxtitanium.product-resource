@@ -116,5 +116,33 @@ public class ProductResource implements ProductController {
             ProductParser.to(products)
         );
     }
+
+    @Override
+    public ResponseEntity<ProductOut> consume(StockIn stockIn) {
+
+        final Product dbProduct = productService.consume(stockIn.id(), stockIn.quantity());
+
+        if (dbProduct == null) {
+            throw new RuntimeException("Product id not found");
+        }
+
+        return ResponseEntity.ok(
+            ProductParser.to(dbProduct)
+        );
+    }
+
+    @Override
+    public ResponseEntity<ProductOut> replenish(StockIn stockIn) {
+
+        final Product dbProduct = productService.replenish(stockIn.id(), stockIn.quantity());
+
+        if (dbProduct == null) {
+            throw new RuntimeException("Product id not found");
+        }
+
+        return ResponseEntity.ok(
+            ProductParser.to(dbProduct)
+        );
+    }
     
 }

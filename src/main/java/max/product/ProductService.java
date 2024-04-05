@@ -19,7 +19,6 @@ public class ProductService {
         return productRepository.save(new ProductModel(in)).to();
     }
 
-    // Retrieves an account from cache if available, otherwise fetches from database
     @Cacheable(value = "products", key = "#id", unless = "#result == null")
     public Product read(String id) {
         return productRepository.findById(id).map(ProductModel::to).orElse(null);
@@ -33,7 +32,6 @@ public class ProductService {
             return null;
         }
 
-        // map only the fields on in that are not null
         if (in.name() != null) {
             dbProduct.name(in.name());
         }
@@ -90,5 +88,33 @@ public class ProductService {
                 .collect(Collectors.toList());
         }
         
+    }
+
+    @CachePut(value = "products", key = "#result.id()", unless = "#result == null")
+    public Product consume(String id, Integer quantity) {
+        final ProductModel dbProduct = productRepository.findById(id).orElse(null);
+
+        if (dbProduct == null) {
+            return null;
+        }
+
+        if (dbProduct.stock() < quantity) {
+            throw new RuntimeException("Insufficient stock");
+        }
+
+        dbProduct.stock(dbProduct.stock() - quantity);
+        return productRepository.save(dbProduct).to();
+    }
+
+    @CachePut(value = "products", key = "#result.id()", unless = "#result == null")
+    public Product replenish(String id, Integer quantity) {
+        final ProductModel dbProduct = productRepository.findById(id).orElse(null);
+
+        if (dbProduct == null) {
+            return null;
+        }
+
+        dbProduct.stock(dbProduct.stock() + quantity);
+        return productRepository.save(dbProduct).to();
     }
 }
