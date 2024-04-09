@@ -8,6 +8,9 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import max.product.exceptions.NotEnoughStockException;
+import max.product.exceptions.ProductNotFoundException;
+
 @Service
 public class ProductService {
     
@@ -21,7 +24,13 @@ public class ProductService {
 
     @Cacheable(value = "products", key = "#id", unless = "#result == null")
     public Product read(String id) {
-        return productRepository.findById(id).map(ProductModel::to).orElse(null);
+        Product product = productRepository.findById(id).map(ProductModel::to).orElse(null);
+
+        if (product == null) {
+            throw new ProductNotFoundException(id);
+        }
+
+        return product;
     }
 
     @CachePut(value = "products", key = "#result.id()", unless = "#result == null")
@@ -29,7 +38,7 @@ public class ProductService {
         ProductModel dbProduct = productRepository.findById(id).orElse(null);
 
         if (dbProduct == null) {
-            return null;
+            throw new ProductNotFoundException(id);
         }
 
         if (in.name() != null) {
@@ -64,7 +73,7 @@ public class ProductService {
         final ProductModel dbProduct = productRepository.findById(id).orElse(null);
 
         if (dbProduct == null) {
-            return null;
+            throw new ProductNotFoundException(id);
         }
 
         productRepository.deleteById(id);
@@ -95,11 +104,11 @@ public class ProductService {
         final ProductModel dbProduct = productRepository.findById(id).orElse(null);
 
         if (dbProduct == null) {
-            return null;
+            throw new ProductNotFoundException(id);
         }
 
         if (dbProduct.stock() < quantity) {
-            throw new RuntimeException("Insufficient stock");
+            throw new NotEnoughStockException("Product with ID " + id + " has only " + dbProduct.stock() + " units in stock.");
         }
 
         dbProduct.stock(dbProduct.stock() - quantity);
@@ -111,7 +120,7 @@ public class ProductService {
         final ProductModel dbProduct = productRepository.findById(id).orElse(null);
 
         if (dbProduct == null) {
-            return null;
+            throw new ProductNotFoundException(id);
         }
 
         dbProduct.stock(dbProduct.stock() + quantity);

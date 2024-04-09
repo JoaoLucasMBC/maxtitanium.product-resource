@@ -50,10 +50,6 @@ public class ProductResource implements ProductController {
 
         final Product dbProduct = productService.read(id);
 
-        if (dbProduct == null) {
-            throw new RuntimeException("Produict id not found");
-        }
-
 		return ResponseEntity.ok(
             ProductParser.to(dbProduct)
         );
@@ -61,10 +57,9 @@ public class ProductResource implements ProductController {
 
 	@Override
 	public ResponseEntity<ProductOut> create(ProductIn productIn) {
-        // parser
+        
         Product product = ProductParser.to(productIn);
 
-        // insert using service
         product = productService.create(product);
 
         return ResponseEntity.created(
@@ -78,15 +73,10 @@ public class ProductResource implements ProductController {
 
 	@Override
 	public ResponseEntity<ProductOut> update(String id, ProductIn productIn) {
-        // parser
+        
         Product product = ProductParser.to(productIn);
 
-        // insert using service
         product = productService.update(id, product);
-
-        if (product == null) {
-            throw new RuntimeException("Product id not found");
-        }
 
         return ResponseEntity.ok(
             ProductParser.to(product)
@@ -97,10 +87,6 @@ public class ProductResource implements ProductController {
 	public ResponseEntity<ProductOut> delete(String id) {
 
         final Product dbProduct = productService.delete(id);
-
-        if (dbProduct == null) {
-            throw new RuntimeException("Product id not found");
-        }
 
         return ResponseEntity.ok(
             ProductParser.to(dbProduct)
@@ -122,10 +108,6 @@ public class ProductResource implements ProductController {
 
         final Product dbProduct = productService.consume(stockIn.id(), stockIn.quantity());
 
-        if (dbProduct == null) {
-            throw new RuntimeException("Product id not found");
-        }
-
         return ResponseEntity.ok(
             ProductParser.to(dbProduct)
         );
@@ -135,10 +117,6 @@ public class ProductResource implements ProductController {
     public ResponseEntity<ProductOut> replenish(StockIn stockIn) {
 
         final Product dbProduct = productService.replenish(stockIn.id(), stockIn.quantity());
-
-        if (dbProduct == null) {
-            throw new RuntimeException("Product id not found");
-        }
 
         return ResponseEntity.ok(
             ProductParser.to(dbProduct)
